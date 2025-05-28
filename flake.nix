@@ -49,5 +49,7 @@
           };
           default = self.apps.${system}.websigner;
         };
+
+        nixosModules.websigner = import ./nixos-module.nix;
       });
 }

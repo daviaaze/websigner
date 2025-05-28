@@ -97,8 +97,15 @@ stdenv.mkDerivation rec {
     # Create output directories
     mkdir -p $out/opt/softplan-websigner
     mkdir -p $out/bin
+    
+    # Mozilla/Firefox native messaging hosts
     mkdir -p $out/lib/mozilla/native-messaging-hosts
     mkdir -p $out/share/mozilla/native-messaging-hosts
+    
+    # Chrome/Chromium native messaging hosts
+    mkdir -p $out/etc/chromium/native-messaging-hosts
+    mkdir -p $out/etc/chrome/native-messaging-hosts
+    mkdir -p $out/etc/opt/chrome/native-messaging-hosts
     
     # Copy the main application
     cp -r opt/softplan-websigner/* $out/opt/softplan-websigner/
@@ -116,6 +123,16 @@ stdenv.mkDerivation rec {
       cp -r usr/share/mozilla/native-messaging-hosts/* $out/share/mozilla/native-messaging-hosts/
     fi
     
+    # Copy Chrome/Chromium native messaging host configurations
+    # Chrome looks in /etc/chromium/native-messaging-hosts and /etc/opt/chrome/native-messaging-hosts
+    for json_file in $out/lib/mozilla/native-messaging-hosts/*.json; do
+      if [ -f "$json_file" ]; then
+        cp "$json_file" $out/etc/chromium/native-messaging-hosts/
+        cp "$json_file" $out/etc/chrome/native-messaging-hosts/
+        cp "$json_file" $out/etc/opt/chrome/native-messaging-hosts/
+      fi
+    done
+    
     # Make the main executable accessible from PATH
     makeWrapper $out/opt/softplan-websigner/websigner $out/bin/websigner \
       --set LD_LIBRARY_PATH "${lib.makeLibraryPath buildInputs}" \
@@ -130,21 +147,31 @@ stdenv.mkDerivation rec {
   # Fix the native messaging host JSON files to point to the correct path
   postInstall = ''
     # Update the native messaging host configuration files to point to our installation
-    for file in $out/lib/mozilla/native-messaging-hosts/*.json $out/share/mozilla/native-messaging-hosts/*.json; do
-      if [ -f "$file" ]; then
-        sed -i "s|/opt/softplan-websigner/websigner|$out/opt/softplan-websigner/websigner|g" "$file"
-      fi
+    for dir in lib/mozilla/native-messaging-hosts share/mozilla/native-messaging-hosts etc/chromium/native-messaging-hosts etc/chrome/native-messaging-hosts etc/opt/chrome/native-messaging-hosts; do
+      for file in $out/$dir/*.json; do
+        if [ -f "$file" ]; then
+          sed -i "s|/opt/softplan-websigner/websigner|$out/opt/softplan-websigner/websigner|g" "$file"
+        fi
+      done
     done
   '';
+
+  # Provide passthru for easy access to native messaging host files
+  passthru = {
+    # For NixOS modules that need to install native messaging hosts
+    nativeMessagingHosts = {
+      firefox = "$out/lib/mozilla/native-messaging-hosts";
+      chrome = "$out/etc/chromium/native-messaging-hosts";
+      chromium = "$out/etc/chromium/native-messaging-hosts";
+    };
+  };
 
   meta = with lib; {
     description = "WebSigner - Digital signature application by Softplan";
     homepage = "https://www.softplan.com.br/";
-    license = licenses.unfree; # Assuming it's proprietary software
+    license = licenses.unfree;
     platforms = platforms.linux;
-    maintainers = [ ]; # Add your name here if you want
-    
-    # Since this is a .deb package, it's likely x86_64 only
+    maintainers = [ ];
     sourceProvenance = with sourceTypes; [ binaryNativeCode ];
   };
 } 
