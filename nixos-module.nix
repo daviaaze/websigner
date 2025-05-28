@@ -63,10 +63,12 @@ in
     security.wrappers = mkIf cfg.enableSmartCardSupport {
       opensc-tool = {
         source = "${pkgs.opensc}/bin/opensc-tool";
+        owner = "root";
         capabilities = "cap_sys_rawio+ep";
       };
       pkcs11-tool = {
         source = "${pkgs.opensc}/bin/pkcs11-tool";
+        owner = "root";
         capabilities = "cap_sys_rawio+ep";
       };
     };
