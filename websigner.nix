@@ -36,6 +36,17 @@
   nss,
   p11-kit,
   ccid,
+  # GTK and dialog dependencies
+  gtk3,
+  glib,
+  pango,
+  gdk-pixbuf,
+  cairo,
+  atk,
+  at-spi2-atk,
+  at-spi2-core,
+  dbus,
+  libepoxy,
 }:
 
 stdenv.mkDerivation rec {
@@ -86,6 +97,17 @@ stdenv.mkDerivation rec {
     numactl
     systemd
     glibcLocales
+    # GTK and native dialogs support
+    gtk3
+    glib
+    pango
+    gdk-pixbuf
+    cairo
+    atk
+    at-spi2-atk
+    at-spi2-core
+    dbus
+    libepoxy
     # PKCS#11 and smart card support
     opensc
     pcsclite
@@ -170,7 +192,11 @@ stdenv.mkDerivation rec {
       --set OPENSC_LIBS "${opensc}/lib" \
       --prefix PKG_CONFIG_PATH : "${opensc}/lib/pkgconfig:${pcsclite}/lib/pkgconfig:${p11-kit}/lib/pkgconfig" \
       --prefix LD_LIBRARY_PATH : "${opensc}/lib:${pcsclite}/lib:${nss}/lib:${p11-kit}/lib" \
-      --set P11_KIT_CONFIG_FILE "${p11-kit}/etc/pkcs11/pkcs11.conf"
+      --set P11_KIT_CONFIG_FILE "${p11-kit}/etc/pkcs11/pkcs11.conf" \
+      --set GTK_PATH "${gtk3}/lib/gtk-3.0" \
+      --set GDK_PIXBUF_MODULE_FILE "${gdk-pixbuf}/lib/gdk-pixbuf-2.0/2.10.0/loaders.cache" \
+      --prefix XDG_DATA_DIRS : "${gtk3}/share:${glib}/share" \
+      --set GIO_MODULE_DIR "${glib}/lib/gio/modules"
     
     # Fix permissions on the main executable
     chmod +x $out/opt/softplan-websigner/websigner
