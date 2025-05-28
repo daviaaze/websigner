@@ -31,6 +31,11 @@
   numactl,
   systemd,
   glibcLocales,
+  opensc,
+  pcsclite,
+  nss,
+  p11-kit,
+  ccid,
 }:
 
 stdenv.mkDerivation rec {
@@ -81,6 +86,12 @@ stdenv.mkDerivation rec {
     numactl
     systemd
     glibcLocales
+    # PKCS#11 and smart card support
+    opensc
+    pcsclite
+    nss
+    p11-kit
+    ccid
   ];
 
   # Use dpkg to extract the .deb file
@@ -154,7 +165,12 @@ stdenv.mkDerivation rec {
       --prefix PATH : "${lib.makeBinPath [ xorg.xrandr ]}" \
       --set DOTNET_SYSTEM_GLOBALIZATION_INVARIANT false \
       --set LOCALE_ARCHIVE "${glibcLocales}/lib/locale/locale-archive" \
-      --set LC_ALL "en_US.UTF-8"
+      --set LC_ALL "en_US.UTF-8" \
+      --set PCSCLITE_LIBRARY "${pcsclite}/lib/libpcsclite.so.1" \
+      --set OPENSC_LIBS "${opensc}/lib" \
+      --prefix PKG_CONFIG_PATH : "${opensc}/lib/pkgconfig:${pcsclite}/lib/pkgconfig:${p11-kit}/lib/pkgconfig" \
+      --prefix LD_LIBRARY_PATH : "${opensc}/lib:${pcsclite}/lib:${nss}/lib:${p11-kit}/lib" \
+      --set P11_KIT_CONFIG_FILE "${p11-kit}/etc/pkcs11/pkcs11.conf"
     
     # Fix permissions on the main executable
     chmod +x $out/opt/softplan-websigner/websigner
