@@ -31,7 +31,6 @@ in
       (optionals cfg.enableSmartCardSupport [
         pkgs.opensc
         pkgs.pcsclite
-        pkgs.ccid
         pkgs.p11-kit
       ]);
 
@@ -50,9 +49,6 @@ in
         "${cfg.package}/etc/opt/chrome/native-messaging-hosts/manifest.json";
     };
 
-    # Smart card support
-    services.pcscd.enable = mkIf cfg.enableSmartCardSupport true;
-    
     # Enable PKCS#11 support
     environment.variables = mkIf cfg.enableSmartCardSupport {
       PCSCLITE_LIBRARY = "${pkgs.pcsclite}/lib/libpcsclite.so.1";
@@ -77,12 +73,6 @@ in
 
     # Add users to necessary groups for smart card access
     users.groups.scard = {};
-    
-    # udev rules for smart card readers
-    services.udev.packages = mkIf cfg.enableSmartCardSupport [ 
-      pkgs.ccid 
-      pkgs.opensc 
-    ];
   };
 
   meta = {
