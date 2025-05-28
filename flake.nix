@@ -49,7 +49,11 @@
           };
           default = self.apps.${system}.websigner;
         };
-
-        nixosModules.websigner = import ./nixos-module.nix;
-      });
+      }) // {
+        # NixOS modules (outside of eachDefaultSystem since they're system-agnostic)
+        nixosModules = {
+          websigner = import ./nixos-module.nix;
+          default = self.nixosModules.websigner;
+        };
+      };
 }
