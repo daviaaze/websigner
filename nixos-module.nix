@@ -66,6 +66,5 @@ in
 
   meta = {
     maintainers = with lib.maintainers; [ ];
-    doc = ./websigner-module.md;
   };
 } 
