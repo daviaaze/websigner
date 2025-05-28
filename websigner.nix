@@ -125,13 +125,13 @@ stdenv.mkDerivation rec {
     
     # Copy Chrome/Chromium native messaging host configurations
     # Chrome looks in /etc/chromium/native-messaging-hosts and /etc/opt/chrome/native-messaging-hosts
-    # Chrome/Chromium needs the br.com.softplan.webpkl.json file (note: without 'i')
+    # Chrome/Chromium needs the br.com.softplan.webpki.json file
     # But the manifest.json contains the correct content for Chrome
     if [ -f opt/softplan-websigner/manifest.json ]; then
-      # Copy manifest.json as br.com.softplan.webpkl.json (the name Chrome expects)
-      cp opt/softplan-websigner/manifest.json $out/etc/chromium/native-messaging-hosts/br.com.softplan.webpkl.json
-      cp opt/softplan-websigner/manifest.json $out/etc/chrome/native-messaging-hosts/br.com.softplan.webpkl.json
-      cp opt/softplan-websigner/manifest.json $out/etc/opt/chrome/native-messaging-hosts/br.com.softplan.webpkl.json
+      # Copy manifest.json as br.com.softplan.webpki.json (the name Chrome expects)
+      cp opt/softplan-websigner/manifest.json $out/etc/chromium/native-messaging-hosts/br.com.softplan.webpki.json
+      cp opt/softplan-websigner/manifest.json $out/etc/chrome/native-messaging-hosts/br.com.softplan.webpki.json
+      cp opt/softplan-websigner/manifest.json $out/etc/opt/chrome/native-messaging-hosts/br.com.softplan.webpki.json
       
       # Also copy with the original names for completeness
       cp opt/softplan-websigner/manifest.json $out/etc/chromium/native-messaging-hosts/manifest.json
