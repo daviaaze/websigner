@@ -32,11 +32,20 @@ in
   };
 
   config = mkIf cfg.enable {
+    # Assert that unfree packages are allowed since WebSigner is proprietary
+    assertions = [
+      {
+        assertion = config.nixpkgs.config.allowUnfree or false;
+        message = ''
+          WebSigner is proprietary software and requires allowUnfree to be enabled.
+          Please add `nixpkgs.config.allowUnfree = true;` to your NixOS configuration
+          or enable it in your flake inputs.
+        '';
+      }
+    ];
+
     # Install the WebSigner package
     environment.systemPackages = [ cfg.package ];
-
-    # Allow unfree packages (WebSigner is proprietary)
-    nixpkgs.config.allowUnfree = true;
 
     # Firefox integration
     programs.firefox = mkIf cfg.enableFirefoxIntegration {
