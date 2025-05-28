@@ -196,7 +196,11 @@ stdenv.mkDerivation rec {
       --set GTK_PATH "${gtk3}/lib/gtk-3.0" \
       --set GDK_PIXBUF_MODULE_FILE "${gdk-pixbuf}/lib/gdk-pixbuf-2.0/2.10.0/loaders.cache" \
       --prefix XDG_DATA_DIRS : "${gtk3}/share:${glib}/share" \
-      --set GIO_MODULE_DIR "${glib}/lib/gio/modules"
+      --set GIO_MODULE_DIR "${glib}/lib/gio/modules" \
+      --set GDK_BACKEND "x11" \
+      --set NO_AT_BRIDGE "1" \
+      --set GTK_THEME "Adwaita" \
+      --unset WAYLAND_DISPLAY
     
     # Fix permissions on the main executable
     chmod +x $out/opt/softplan-websigner/websigner
