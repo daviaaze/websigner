@@ -30,6 +30,7 @@
   lttng-ust,
   numactl,
   systemd,
+  glibcLocales,
 }:
 
 stdenv.mkDerivation rec {
@@ -79,6 +80,7 @@ stdenv.mkDerivation rec {
     lttng-ust
     numactl
     systemd
+    glibcLocales
   ];
 
   # Use dpkg to extract the .deb file
@@ -149,7 +151,10 @@ stdenv.mkDerivation rec {
     
     makeWrapper $out/opt/softplan-websigner/websigner $out/bin/websigner \
       --set LD_LIBRARY_PATH "${lib.makeLibraryPath buildInputs}" \
-      --prefix PATH : "${lib.makeBinPath [ xorg.xrandr ]}"
+      --prefix PATH : "${lib.makeBinPath [ xorg.xrandr ]}" \
+      --set DOTNET_SYSTEM_GLOBALIZATION_INVARIANT false \
+      --set LOCALE_ARCHIVE "${glibcLocales}/lib/locale/locale-archive" \
+      --set LC_ALL "en_US.UTF-8"
     
     # Fix permissions on the main executable
     chmod +x $out/opt/softplan-websigner/websigner
