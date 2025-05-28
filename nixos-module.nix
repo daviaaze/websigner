@@ -18,20 +18,28 @@ in
       description = "The WebSigner package to use.";
     };
 
-    enableSmartCardSupport = mkOption {
+    enablePkcs12Support = mkOption {
       type = types.bool;
       default = true;
-      description = "Enable smart card support for PKCS#11 certificates.";
+      description = "Enable PKCS #12 (PFX) certificate file support for digital signatures.";
+    };
+
+    customCertificates = mkOption {
+      type = types.listOf types.path;
+      default = [];
+      description = "List of custom CA certificate files to add to the system trust store.";
+      example = literalExpression ''[ ./my-ca.crt ./company-root.pem ]'';
     };
   };
 
   config = mkIf cfg.enable {
-    # Install WebSigner package and smart card tools
+    # Install WebSigner package and PKCS #12 tools
     environment.systemPackages = [ cfg.package ] ++ 
-      (optionals cfg.enableSmartCardSupport [
-        pkgs.opensc
-        pkgs.pcsclite
-        pkgs.p11-kit
+      (optionals cfg.enablePkcs12Support [
+        pkgs.openssl          # For PKCS #12 operations
+        pkgs.p11-kit          # Certificate management
+        pkgs.nss              # Mozilla NSS for certificate stores
+        pkgs.openjdk          # Java keystore tools (keytool)
       ]);
 
     # Firefox integration
@@ -49,30 +57,35 @@ in
         "${cfg.package}/etc/opt/chrome/native-messaging-hosts/manifest.json";
     };
 
-    # Enable PKCS#11 support
-    environment.variables = mkIf cfg.enableSmartCardSupport {
-      PCSCLITE_LIBRARY = "${pkgs.pcsclite}/lib/libpcsclite.so.1";
-      OPENSC_LIBS = "${pkgs.opensc}/lib";
+    # Custom certificate support
+    security.pki.certificates = cfg.customCertificates;
+
+    # PKCS #12 and Java keystore support
+    environment.variables = mkIf cfg.enablePkcs12Support {
+      # Java truststore environment (for custom certificates in Java apps)
+      JAVAX_NET_SSL_TRUSTSTORE = let
+        caBundle = config.environment.etc."ssl/certs/ca-certificates.crt".source;
+        javaCaCerts = pkgs.runCommand "java-cacerts" {
+          nativeBuildInputs = [ pkgs.p11-kit ];
+        } ''
+          trust extract \
+            --format=java-cacerts \
+            --purpose=server-auth \
+            --filter=ca-anchors \
+            $out
+        '';
+      in "${javaCaCerts}";
+      
+      # OpenSSL configuration
+      SSL_CERT_FILE = "/etc/ssl/certs/ca-certificates.crt";
+      SSL_CERT_DIR = "/etc/ssl/certs";
     };
 
-    # Security wrappers (if needed for specific smart card operations)
-    security.wrappers = mkIf cfg.enableSmartCardSupport {
-      opensc-tool = {
-        source = "${pkgs.opensc}/bin/opensc-tool";
-        owner = "root";
-        group = "root";
-        capabilities = "cap_sys_rawio+ep";
-      };
-      pkcs11-tool = {
-        source = "${pkgs.opensc}/bin/pkcs11-tool";
-        owner = "root";
-        group = "root";
-        capabilities = "cap_sys_rawio+ep";
-      };
-    };
-
-    # Add users to necessary groups for smart card access
-    users.groups.scard = {};
+    # Create directories for user certificates
+    environment.etc."websigner/certificates/.keep".text = "";
+    
+    # System-wide certificate store updates
+    security.pki.installCACerts = mkDefault true;
   };
 
   meta = {
