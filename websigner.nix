@@ -146,6 +146,7 @@ stdenv.mkDerivation rec {
     fi
     
     # Make the main executable accessible from PATH
+    
     makeWrapper $out/opt/softplan-websigner/websigner $out/bin/websigner \
       --set LD_LIBRARY_PATH "${lib.makeLibraryPath buildInputs}" \
       --prefix PATH : "${lib.makeBinPath [ xorg.xrandr ]}"
@@ -162,7 +163,7 @@ stdenv.mkDerivation rec {
     for dir in opt/softplan-websigner lib/mozilla/native-messaging-hosts share/mozilla/native-messaging-hosts etc/chromium/native-messaging-hosts etc/chrome/native-messaging-hosts etc/opt/chrome/native-messaging-hosts; do
       for file in $out/$dir/*.json; do
         if [ -f "$file" ]; then
-          sed -i "s|/opt/softplan-websigner/websigner|$out/opt/softplan-websigner/websigner|g" "$file"
+          sed -i "s|/opt/softplan-websigner/websigner|$out/bin/websigner|g" "$file"
         fi
       done
     done
