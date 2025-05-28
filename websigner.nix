@@ -125,7 +125,7 @@ stdenv.mkDerivation rec {
     
     # Copy Chrome/Chromium native messaging host configurations
     # Chrome looks in /etc/chromium/native-messaging-hosts and /etc/opt/chrome/native-messaging-hosts
-    for json_file in $out/lib/mozilla/native-messaging-hosts/*.json; do
+    for json_file in $out/opt/softplan-websigner/*.json; do
       if [ -f "$json_file" ]; then
         cp "$json_file" $out/etc/chromium/native-messaging-hosts/
         cp "$json_file" $out/etc/chrome/native-messaging-hosts/
@@ -147,7 +147,7 @@ stdenv.mkDerivation rec {
   # Fix the native messaging host JSON files to point to the correct path
   postInstall = ''
     # Update the native messaging host configuration files to point to our installation
-    for dir in lib/mozilla/native-messaging-hosts share/mozilla/native-messaging-hosts etc/chromium/native-messaging-hosts etc/chrome/native-messaging-hosts etc/opt/chrome/native-messaging-hosts; do
+    for dir in  opt/softplan-websigner lib/mozilla/native-messaging-hosts share/mozilla/native-messaging-hosts etc/chromium/native-messaging-hosts etc/chrome/native-messaging-hosts etc/opt/chrome/native-messaging-hosts; do
       for file in $out/$dir/*.json; do
         if [ -f "$file" ]; then
           sed -i "s|/opt/softplan-websigner/websigner|$out/opt/softplan-websigner/websigner|g" "$file"
