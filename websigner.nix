@@ -125,13 +125,25 @@ stdenv.mkDerivation rec {
     
     # Copy Chrome/Chromium native messaging host configurations
     # Chrome looks in /etc/chromium/native-messaging-hosts and /etc/opt/chrome/native-messaging-hosts
-    for json_file in $out/opt/softplan-websigner/*.json; do
-      if [ -f "$json_file" ]; then
-        cp "$json_file" $out/etc/chromium/native-messaging-hosts/
-        cp "$json_file" $out/etc/chrome/native-messaging-hosts/
-        cp "$json_file" $out/etc/opt/chrome/native-messaging-hosts/
-      fi
-    done
+    # Chrome/Chromium needs the br.com.softplan.webpkl.json file (note: without 'i')
+    # But the manifest.json contains the correct content for Chrome
+    if [ -f opt/softplan-websigner/manifest.json ]; then
+      # Copy manifest.json as br.com.softplan.webpkl.json (the name Chrome expects)
+      cp opt/softplan-websigner/manifest.json $out/etc/chromium/native-messaging-hosts/br.com.softplan.webpkl.json
+      cp opt/softplan-websigner/manifest.json $out/etc/chrome/native-messaging-hosts/br.com.softplan.webpkl.json
+      cp opt/softplan-websigner/manifest.json $out/etc/opt/chrome/native-messaging-hosts/br.com.softplan.webpkl.json
+      
+      # Also copy with the original names for completeness
+      cp opt/softplan-websigner/manifest.json $out/etc/chromium/native-messaging-hosts/manifest.json
+      cp opt/softplan-websigner/manifest.json $out/etc/chrome/native-messaging-hosts/manifest.json
+      cp opt/softplan-websigner/manifest.json $out/etc/opt/chrome/native-messaging-hosts/manifest.json
+    fi
+    
+    if [ -f opt/softplan-websigner/manifest-edge.json ]; then
+      cp opt/softplan-websigner/manifest-edge.json $out/etc/chromium/native-messaging-hosts/manifest-edge.json
+      cp opt/softplan-websigner/manifest-edge.json $out/etc/chrome/native-messaging-hosts/manifest-edge.json
+      cp opt/softplan-websigner/manifest-edge.json $out/etc/opt/chrome/native-messaging-hosts/manifest-edge.json
+    fi
     
     # Make the main executable accessible from PATH
     makeWrapper $out/opt/softplan-websigner/websigner $out/bin/websigner \
@@ -147,7 +159,7 @@ stdenv.mkDerivation rec {
   # Fix the native messaging host JSON files to point to the correct path
   postInstall = ''
     # Update the native messaging host configuration files to point to our installation
-    for dir in  opt/softplan-websigner lib/mozilla/native-messaging-hosts share/mozilla/native-messaging-hosts etc/chromium/native-messaging-hosts etc/chrome/native-messaging-hosts etc/opt/chrome/native-messaging-hosts; do
+    for dir in opt/softplan-websigner lib/mozilla/native-messaging-hosts share/mozilla/native-messaging-hosts etc/chromium/native-messaging-hosts etc/chrome/native-messaging-hosts etc/opt/chrome/native-messaging-hosts; do
       for file in $out/$dir/*.json; do
         if [ -f "$file" ]; then
           sed -i "s|/opt/softplan-websigner/websigner|$out/opt/softplan-websigner/websigner|g" "$file"
