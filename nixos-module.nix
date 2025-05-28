@@ -64,11 +64,13 @@ in
       opensc-tool = {
         source = "${pkgs.opensc}/bin/opensc-tool";
         owner = "root";
+        group = "root";
         capabilities = "cap_sys_rawio+ep";
       };
       pkcs11-tool = {
         source = "${pkgs.opensc}/bin/pkcs11-tool";
         owner = "root";
+        group = "root";
         capabilities = "cap_sys_rawio+ep";
       };
     };
