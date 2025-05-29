@@ -50,6 +50,11 @@
   # Pixbuf loaders and mime support
   librsvg,
   shared-mime-info,
+  # GTK themes and icons
+  gnome-themes-extra,
+  adwaita-icon-theme,
+  hicolor-icon-theme,
+  gsettings-desktop-schemas,
 }:
 
 stdenv.mkDerivation rec {
@@ -120,6 +125,11 @@ stdenv.mkDerivation rec {
     # Pixbuf loaders and mime support
     librsvg
     shared-mime-info
+    # GTK themes and icons
+    gnome-themes-extra
+    adwaita-icon-theme
+    hicolor-icon-theme
+    gsettings-desktop-schemas
   ];
 
   # Use dpkg to extract the .deb file
@@ -201,11 +211,15 @@ stdenv.mkDerivation rec {
       --set P11_KIT_CONFIG_FILE "${p11-kit}/etc/pkcs11/pkcs11.conf" \
       --set GTK_PATH "${gtk3}/lib/gtk-3.0" \
       --set GDK_PIXBUF_MODULE_FILE "$out/lib/gdk-pixbuf-2.0/2.10.0/loaders.cache" \
-      --prefix XDG_DATA_DIRS : "${gtk3}/share:${glib}/share:${shared-mime-info}/share" \
+      --prefix XDG_DATA_DIRS : "${gtk3}/share:${glib}/share:${shared-mime-info}/share:${gnome-themes-extra}/share:${adwaita-icon-theme}/share:${hicolor-icon-theme}/share:${gsettings-desktop-schemas}/share" \
       --set GIO_MODULE_DIR "${glib}/lib/gio/modules" \
       --set GDK_BACKEND "x11" \
       --set NO_AT_BRIDGE "1" \
       --set GTK_THEME "Adwaita" \
+      --set GTK_DATA_PREFIX "${gtk3}" \
+      --set GTK_EXE_PREFIX "${gtk3}" \
+      --set GTK2_RC_FILES "${gnome-themes-extra}/share/themes/Adwaita/gtk-2.0/gtkrc" \
+      --set XCURSOR_PATH "${adwaita-icon-theme}/share/icons" \
       --unset WAYLAND_DISPLAY
     
     # Fix permissions on the main executable
