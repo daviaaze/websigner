@@ -6,11 +6,17 @@
     flake-utils.url = "github:numtide/flake-utils";
   };
 
-  outputs = { self, nixpkgs, flake-utils }:
-    flake-utils.lib.eachDefaultSystem (system:
+  outputs =
+    {
+      self,
+      nixpkgs,
+      flake-utils,
+    }:
+    flake-utils.lib.eachDefaultSystem (
+      system:
       let
         pkgs = nixpkgs.legacyPackages.${system};
-        
+
         # Allow unfree packages (needed for proprietary software)
         pkgsWithUnfree = import nixpkgs {
           inherit system;
@@ -31,7 +37,7 @@
             binutils
             patchelf
           ];
-          
+
           shellHook = ''
             echo "WebSigner development environment"
             echo "Available commands:"
@@ -49,11 +55,13 @@
           };
           default = self.apps.${system}.websigner;
         };
-      }) // {
-        # NixOS modules (outside of eachDefaultSystem since they're system-agnostic)
-        nixosModules = {
-          websigner = import ./nixos-module.nix;
-          default = self.nixosModules.websigner;
-        };
+      }
+    )
+    // {
+      # NixOS modules (outside of eachDefaultSystem since they're system-agnostic)
+      nixosModules = {
+        websigner = import ./nixos-module.nix;
+        default = self.nixosModules.websigner;
       };
+    };
 }
