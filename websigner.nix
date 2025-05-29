@@ -47,6 +47,9 @@
   at-spi2-core,
   dbus,
   libepoxy,
+  # Pixbuf loaders and mime support
+  librsvg,
+  shared-mime-info,
 }:
 
 stdenv.mkDerivation rec {
@@ -114,6 +117,9 @@ stdenv.mkDerivation rec {
     nss
     p11-kit
     ccid
+    # Pixbuf loaders and mime support
+    librsvg
+    shared-mime-info
   ];
 
   # Use dpkg to extract the .deb file
@@ -194,8 +200,8 @@ stdenv.mkDerivation rec {
       --prefix LD_LIBRARY_PATH : "${opensc}/lib:${pcsclite}/lib:${nss}/lib:${p11-kit}/lib" \
       --set P11_KIT_CONFIG_FILE "${p11-kit}/etc/pkcs11/pkcs11.conf" \
       --set GTK_PATH "${gtk3}/lib/gtk-3.0" \
-      --set GDK_PIXBUF_MODULE_FILE "${gdk-pixbuf}/lib/gdk-pixbuf-2.0/2.10.0/loaders.cache" \
-      --prefix XDG_DATA_DIRS : "${gtk3}/share:${glib}/share" \
+      --set GDK_PIXBUF_MODULE_FILE "$out/lib/gdk-pixbuf-2.0/2.10.0/loaders.cache" \
+      --prefix XDG_DATA_DIRS : "${gtk3}/share:${glib}/share:${shared-mime-info}/share" \
       --set GIO_MODULE_DIR "${glib}/lib/gio/modules" \
       --set GDK_BACKEND "x11" \
       --set NO_AT_BRIDGE "1" \
@@ -218,6 +224,11 @@ stdenv.mkDerivation rec {
         fi
       done
     done
+    
+    # Create a proper gdk-pixbuf loaders cache with SVG support
+    mkdir -p $out/lib/gdk-pixbuf-2.0/2.10.0
+    GDK_PIXBUF_MODULEDIR="${gdk-pixbuf}/lib/gdk-pixbuf-2.0/2.10.0/loaders:${librsvg}/lib/gdk-pixbuf-2.0/2.10.0/loaders" \
+      ${gdk-pixbuf}/bin/gdk-pixbuf-query-loaders > $out/lib/gdk-pixbuf-2.0/2.10.0/loaders.cache
   '';
 
   # Provide passthru for easy access to native messaging host files
